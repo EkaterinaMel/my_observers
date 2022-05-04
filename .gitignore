@@ -95,7 +95,7 @@ class Subject;
 
         cout << "-Click on screen to exit-\n";
         cout << "* * * * * * *\n";
-        cout << "*   Notify  * -click here to notify\n";
+        cout << "*   Notify  * <-click here to notify\n";
         cout << "* * * * * * *\n";
  
 
