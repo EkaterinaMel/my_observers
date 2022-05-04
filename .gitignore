@@ -1,32 +1,129 @@
-# Prerequisites
-*.d
+#include <iostream>
+#include <vector>
+#include <windows.h>
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+using namespace std;
 
-# Precompiled Headers
-*.gch
-*.pch
+/**/
+class Subject;
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+	class Observer {
+        int count;
+	public:
+		virtual ~Observer() = default;
+		virtual void Update() = 0;
 
-# Fortran module files
-*.mod
-*.smod
+	};
 
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
+	class Subject {
+	private:
+		vector<Observer*> subs;
+	public:
+		void registerSub(Observer *obs) {
+			subs.push_back(obs);
+		}
+		void removeSub(Observer *obs) {
+            auto it = find(subs.begin(), subs.end(), obs);
+            if (it != subs.end())
+                subs.erase(it);		
+		}
+        void Notify()
+        {
+            for (int i = 0; i < subs.size(); ++i) {
+                subs[i]->Update();
+            }
+        }
+	};
 
-# Executables
-*.exe
-*.out
-*.app
+    class BronzeSubscriber : public Observer
+    {
+    private:
+        string name;
+    public:
+        BronzeSubscriber(Subject* sub, string n) {
+            sub->registerSub(this);
+            name = n;
+        }
+        void Update() {
+            cout << "Hey, Bronze Sub " << name << ", new video on the channel!\n";
+      }
+
+    };
+
+    class SilverSubscriber : public Observer
+    {
+    private:
+        string name;
+    public:
+        SilverSubscriber(Subject* sub, string n) {
+            sub->registerSub(this);
+            name = n;
+        }
+        void Update() {
+            cout << "Hey, Silver Sub " << name << ", new video on the channel!\n";
+        }
+
+    };
+
+    class GoldenSubscriber : public Observer
+    {
+    private:
+        string name;
+    public:
+        GoldenSubscriber(Subject* sub, string n) {
+            sub->registerSub(this);
+            name = n;
+        }
+        void Update() {
+            cout << "Hey, Golden Sub " << name << ", new video on the channel!\n";
+        }
+
+    };
+
+	void Button(Subject sub) {
+        HANDLE hin = GetStdHandle(STD_INPUT_HANDLE); // получаем дескриптор
+        INPUT_RECORD InputRecord; // используется для возвращения информации о входных сообщениях в консольном входном буфере
+        DWORD Events; // unsigned long
+        COORD coord; // для координат X, Y
+
+        /*Запретить выделение консоли*/
+        DWORD prev_mode;
+        GetConsoleMode(hin, &prev_mode);
+        SetConsoleMode(GetStdHandle(STD_INPUT_HANDLE), ENABLE_EXTENDED_FLAGS | (prev_mode & ~ENABLE_QUICK_EDIT_MODE));
+
+        SetConsoleMode(hin, ENABLE_MOUSE_INPUT); // разрешаем обработку мыши
+
+        cout << "-Click on screen to exit-\n";
+        cout << "* * * * * * *\n";
+        cout << "*   Notify  * -click here to notify\n";
+        cout << "* * * * * * *\n";
+ 
+
+       // bool b = 1;
+        while (true)
+        {
+            ReadConsoleInput(hin, &InputRecord, 1, &Events); // считывание 
+            int x0=0, y0=0, x1 = 12, y1=2;
+            if (InputRecord.Event.MouseEvent.dwButtonState == FROM_LEFT_1ST_BUTTON_PRESSED) // левая кнопка
+            {
+                coord.X = InputRecord.Event.MouseEvent.dwMousePosition.X;
+                coord.Y = InputRecord.Event.MouseEvent.dwMousePosition.Y;
+              //  cout << "left - X" << coord.X << ", Y = " << coord.Y << endl;
+                if ((coord.X >= x0) && (coord.Y >= x0) && (coord.X <= x1) && (coord.Y <= x1)) {
+                    sub.Notify();
+                }
+                else break;
+            }
+
+        }
+
+	}
+
+int main() {
+    Subject subj;
+    BronzeSubscriber bronzeS(&subj, "Ann");
+    SilverSubscriber silverS(&subj, "Gregory");
+    GoldenSubscriber goldenS(&subj, "Elise");
+    Button(subj);
+
+}
